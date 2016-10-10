@@ -2,12 +2,19 @@
 from lxml import etree
 import zipfile
 
-# IDHVID -> VIDNAME   
+DATE_END = "31.12.2999"
+
+# IDHVID -> HVIDNAME   
 # Example:
 # "14.00.26.003" -> "Коронарная реваскуляризация миокарда с применением
 # ангиопластики в сочетании со стентированием при ишемической болезни
 # сердца"
-SPHVID = {} 
+SPHVID = {}
+
+# CODE -> N_GR
+# Example:
+# "09.00.15.002.331" -> "15"
+SPVMPSERV = {}
 
 def readSPHVID():
     global SPHVID
@@ -20,16 +27,35 @@ def readSPHVID():
     nodes = page.xpath('/ROOT/REC')
 
     for node in nodes:
-        DATEEND = node.get('DATEEND')
-        if DATEEND == "31.12.2999":
-           IDHVID = node.get('IDHVID') 
-           VIDNAME = node.get('HVIDNAME')
-           SPHVID.update({IDHVID: VIDNAME})
+        dateend = node.get('DATEEND')
+        if dateend == DATE_END:
+           idhvid = node.get('IDHVID') 
+           hvidname = node.get('HVIDNAME')
+           SPHVID.update({idhvid: hvidname})
+
+
+def readSPVMPSERV():
+    global SPVMPSERV
+
+    archive = zipfile.ZipFile('SPVMPSERV.zip', 'r')
+    f = archive.open('SPVMPSERV.XML')
+
+    parser = etree.XMLParser(encoding='cp1251')
+    page = etree.parse(f, parser)
+    nodes = page.xpath('/ROOT/REC')
+
+    for node in nodes:
+        dend = node.get('DEND')
+        if dend == DATE_END:
+           code = node.get('CODE') 
+           n_gr = node.get('N_GR')
+           SPVMPSERV.update({code: n_gr})
     
-    for key in SPHVID:
-        print key, SPHVID.get(key)
-
-
-
 
 readSPHVID()
+#for key in SPHVID:
+#    print key, SPHVID.get(key)
+
+readSPVMPSERV()
+#for key in SPVMPSERV:
+#    print key, SPVMPSERV.get(key)    
