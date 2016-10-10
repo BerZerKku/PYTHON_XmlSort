@@ -1,6 +1,7 @@
 # -*- coding: cp1251 -*-
 from lxml import etree
 import zipfile
+import xlwt
 
 # дата окончания действия
 DATE_END = "31.12.2999"
@@ -60,6 +61,7 @@ SPHMET = {}
 SPHMET = {}
 SPMEDSERVICE = {}
 # Сформированные справочники
+GLB_HANDBOOK_COLUMN = ("CODE", "HMNAME", "HVIDNAME", "N_GR")
 GLB_HANDBOOK = {}
 
 ##
@@ -180,7 +182,13 @@ def createHandbook():
     if errors > 0:
         print "В createHandbook %d ошибок" % (errors)
 
+
+##
 def saveFile(name):
+    ''' (str) -> None
+
+        Сохранение текстового файла.
+    '''
     f = open(name, "w")
 
     cnt = 0
@@ -200,8 +208,40 @@ def saveFile(name):
         
     f.close()
     
+def saveExcel(name):
+    ''' (str) -> None
 
+        Сохранение таблицы Excel.
+    '''
+    # созданим новый файл
+    font0 = xlwt.Font()
+    font0.name = 'Times New Roman'
+    font0.colour_index = 2
+    font0.bold = True
 
+    style0 = xlwt.XFStyle()
+    style0.font = font0
+
+    wr_wb = xlwt.Workbook()
+    ws = wr_wb.add_sheet(u'Справочник')
+    row = 0
+    for code in GLB_HANDBOOK:
+        column = 0
+        if row == 0:
+            for i in range(column, len(GLB_HANDBOOK_COLUMN)):
+                ws.write(row, column, GLB_HANDBOOK_COLUMN[i])
+                column += 1
+        else:
+            ws.write(row, column, code)
+            column += 1
+            for i in range(column, len(GLB_HANDBOOK_COLUMN)):
+                key = GLB_HANDBOOK_COLUMN[i]
+                ws.write(row, column, GLB_HANDBOOK[code].get(key))
+                column += 1
+        row += 1   
+    wr_wb.save(name)
+    
+        
 ##
 if __name__ == "__main__":
     for name in HANDBOOK:
@@ -213,7 +253,8 @@ if __name__ == "__main__":
 
     createHandbook()
 
-    saveFile(u"file.txt")
+##    saveFile(u"file.txt")
+    saveExcel(u"file.xls")
      
 
 
