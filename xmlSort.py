@@ -6,7 +6,7 @@ import zipfile
 DATE_END = "31.12.2999"
 
 # необходимые отделения
-DIVISION = ("106", "156")
+DIVISION = ("106",) # , "156"
 
 HANDBOOK = {
 # SPHVID
@@ -145,8 +145,9 @@ def createHandbook():
 
         Формирование конечного словаря:
         CODE -> dict{DIVISION, NAME, HVIDNAME, HMNAME, N_GR}
+        HVIDNAME - берется по первым 4 числам из CODE
     '''
-
+    errors = 0
     for code in SPMEDSERVICE:
         data = {}
         name = SPMEDSERVICE[code].get("NAME")
@@ -155,6 +156,8 @@ def createHandbook():
         hmname = 'None'
         if code in SPHMET:
             hmname = SPHMET[code].get("HMNAME")
+        else:
+            errors += 1
         data["HMNAME"] = hmname;
 
         #pos = code.rfind('.')
@@ -162,14 +165,20 @@ def createHandbook():
         hvidname = 'None'
         if code[0:code.rfind('.')] in SPHVID:
             hvidname = SPHVID[idhvid].get("HVIDNAME")
+        else:
+            errors += 1
         data["HVIDNAME"] = hvidname
         
         n_gr = 'None'
         if code in SPVMPSERV:
             n_gr = SPVMPSERV[code].get("N_GR")
+        else:
+            errors += 1
         data["N_GR"] = n_gr
         GLB_HANDBOOK.update({code: data})
-            
+        
+    if errors > 0:
+        print "В createHandbook %d ошибок" % (errors)
 
 def saveFile(name):
     f = open(name, "w")
@@ -177,13 +186,16 @@ def saveFile(name):
     cnt = 0
     for code in GLB_HANDBOOK:
         cnt += 1
-        if cnt >= 100:
-            break;
         name = GLB_HANDBOOK[code].get("NAME")
         hmname = GLB_HANDBOOK[code].get("HMNAME")
         hvidname = GLB_HANDBOOK[code].get("HVIDNAME")
         n_gr = GLB_HANDBOOK[code].get("N_GR")
-        s = code + ',' + name + ',' + hmname + ',' + hvidname + ',' + n_gr + '\n'
+        s = str(cnt) + ' '
+        s += code + ' '
+        s += name + ' '
+        s += hmname + ' '
+        s += hvidname + ' '
+        s += n_gr + '\n'
         f.write(s.encode("cp1251"))
         
     f.close()
